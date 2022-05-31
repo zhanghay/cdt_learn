@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import cv2
 from utils.meter import AverageMeter
-from utils.metrics import R1_mAP, R1_mAP_eval, R1_mAP_Pseudo, R1_mAP_query_mining, R1_mAP_save_feature, \
+from utils.metrics_test import R1_mAP, R1_mAP_eval, R1_mAP_Pseudo, R1_mAP_query_mining, R1_mAP_save_feature, \
     R1_mAP_draw_figure, Class_accuracy_eval
 from utils.reranking import re_ranking, re_ranking_numpy
 from torch.nn.parallel import DistributedDataParallel
@@ -242,21 +242,21 @@ def generate_new_dataset(cfg, logger, label_memory2, s_dataset, t_dataset, knnid
     return train_loader
 
 
-def do_train_uda(cfg,
-                 model,
-                 center_criterion,
-                 train_loader,
-                 train_loader1,
-                 train_loader2,
-                 img_num1,
-                 img_num2,
-                 val_loader,
-                 s_dataset, t_dataset,
-                 optimizer,
-                 optimizer_center,
-                 scheduler,
-                 loss_fn,
-                 num_query, local_rank):
+def do_train_uda_test(cfg,
+                      model,
+                      center_criterion,
+                      train_loader,
+                      train_loader1,
+                      train_loader2,
+                      img_num1,
+                      img_num2,
+                      val_loader,
+                      s_dataset, t_dataset,
+                      optimizer,
+                      optimizer_center,
+                      scheduler,
+                      loss_fn,
+                      num_query, local_rank):
     log_period = cfg.SOLVER.LOG_PERIOD
     checkpoint_period = cfg.SOLVER.CHECKPOINT_PERIOD
     eval_period = cfg.SOLVER.EVAL_PERIOD
@@ -522,10 +522,10 @@ def do_train_uda(cfg,
             logger.info("CMC curve, Rank-{:<3}:{:.1%}".format(r, cmc[r - 1]))
 
 
-def do_inference_uda(cfg,
-                     model,
-                     val_loader,
-                     num_query):
+def do_inference_uda_test(cfg,
+                          model,
+                          val_loader,
+                          num_query):
     device = "cuda"
     logger = logging.getLogger("reid_baseline.test")
     logger.info("Enter inferencing")
@@ -534,7 +534,6 @@ def do_inference_uda(cfg,
     elif cfg.TEST.EVAL:
         evaluator = R1_mAP_eval(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM)
     else:
-
         evaluator = R1_mAP_draw_figure(cfg, num_query, max_rank=50, feat_norm=True,
                                        reranking=cfg.TEST.RE_RANKING)
         # evaluator = R1_mAP_save_feature(num_query, max_rank=50, feat_norm=cfg.TEST.FEAT_NORM,
@@ -558,6 +557,18 @@ def do_inference_uda(cfg,
 
             if cfg.MODEL.TASK_TYPE == 'classify_DA':
                 probs = model(img, img, cam_label=camids, view_label=target_view, return_logits=True)
+                prob_numpy = probs[1].cpu().numpy()
+                predict_class_id = np.argmax(prob_numpy)
+                predict_num = np.max(prob_numpy)
+
+                with open('/home/hangyuan/nx/code/VisDA/CDTrans/logs/output/Vis/result.txt', 'r') as f:
+                    line = f.readlines()
+                num_line = len(line)
+                with open('/home/hangyuan/nx/code/VisDA/CDTrans/logs/output/Vis/result.txt', 'a') as f:
+                    f.write('{} {} {}\n'.format(num_line, predict_num, predict_class_id ))
+    print('over')
+
+'''
                 evaluator.update((probs[1], vid))
             else:
                 feat1, feat2 = model(img, img, cam_label=camids, view_label=target_view, return_logits=False)
@@ -587,3 +598,4 @@ def do_inference_uda(cfg,
         np.save(os.path.join(cfg.OUTPUT_DIR, 'image_name.npy'), img_name_path)
         np.save(os.path.join(cfg.OUTPUT_DIR, 'view_label.npy'), viewids)
         print('over')
+'''

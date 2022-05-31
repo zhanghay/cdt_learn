@@ -157,7 +157,7 @@ class Class_accuracy_eval():
         return entropy
 
     def compute(self):  # called after each epoch
-        self.class_num = len(set(self.pids))
+        self.class_num = len(set(self.pids))  # 类别数目
         output_prob = torch.cat(self.output_prob, dim=0)
         #         if self.feat_norm:
         #             print("The test feature is normalized")

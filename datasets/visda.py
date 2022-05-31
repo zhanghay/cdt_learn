@@ -25,24 +25,24 @@ class VisDA(BaseImageDataset):
         root_val = root_val
         self.train_dataset_dir = osp.dirname(root_train)
         self.valid_dataset_dir = osp.dirname(root_val)
-        self.train_name = osp.dirname(root_train).split('/')[-1]
+        self.train_name = osp.dirname(root_train).split('/')[-1]  # 来自于dirname
         # self.test_name = osp.dirname(root_test).split('/')[-1]
         self.val_name = osp.dirname(root_val).split('/')[-1]
-        self.test_name = self.val_name
-        self.pid_begin = pid_begin
-        train = self._process_dir(root_train, self.train_dataset_dir)
+        self.test_name = self.val_name  # test name = val name
+        self.pid_begin = pid_begin  # 传入参数 默认 0
+        train = self._process_dir(root_train, self.train_dataset_dir)  # 使用 类中函数
         # test = self._process_dir(root_test)
         valid = self._process_dir(root_val, self.valid_dataset_dir)
 
         
         if verbose:
             print("=> VidDA-2017 loaded")
-            self.print_dataset_statistics(train, valid)
+            self.print_dataset_statistics(train, valid)  # 打印信息 数据数目， 种类 （可以不用，verbose =False)
             
         self.train = train
         self.test = valid
         self.valid = valid
-
+# 搞清 这三个必要性
         self.num_train_pids, self.num_train_imgs, self.num_train_cams, self.num_train_vids = self.get_imagedata_info(self.train)   
         self.num_test_pids, self.num_test_imgs, self.num_test_cams, self.num_test_vids = self.get_imagedata_info(self.test)
         self.num_valid_pids, self.num_valid_imgs, self.num_valid_cams, self.num_valid_vids = self.get_imagedata_info(self.valid)
@@ -76,18 +76,18 @@ class VisDA(BaseImageDataset):
         print("  ----------------------------------------")
         
     def _process_dir(self, list_path, dir_path):
-        with open(list_path, 'r') as txt:
+        with open(list_path, 'r') as txt:  # 读文件
             lines = txt.readlines()
-        dataset = []
+        dataset = []  # (img_path,  self.pid_begin +pid, 0, 0, img_idx)
         pid_container = set()
         cam_container = set()
         # print(lines)
-        for img_idx, img_info in enumerate(lines):
+        for img_idx, img_info in enumerate(lines):  # 图片序号和路径
             data = img_info.split(' ')
             # print(data)
             if len(data) == 1:
                 print(data)
-            img_path, pid = data
+            img_path, pid = data  # 得到 路径 标签顺序
             pid = int(pid)  # no need to relabel
             img_path = osp.join(dir_path, img_path)
             dataset.append((img_path,  self.pid_begin +pid, 0, 0, img_idx))
@@ -95,6 +95,6 @@ class VisDA(BaseImageDataset):
 #             cam_container.add(camid)
 #         print(cam_container, 'cam_container')
         # check if pid starts from 0 and increments with 1
-        for idx, pid in enumerate(pid_container):
+        for idx, pid in enumerate(pid_container):  # 返回 序号 和 标签序号
             assert idx == pid, "See code comment for explanation"
         return dataset

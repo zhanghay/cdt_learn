@@ -3,9 +3,8 @@ from config import cfg
 import argparse
 from datasets import make_dataloader
 from model import make_model
-from processor import do_inference, do_inference_uda
+from processor import do_inference, do_inference_uda, do_inference_uda_test
 from utils.logger import setup_logger
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ReID Baseline Training")
@@ -15,7 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("opts", help="Modify config options using the command-line", default=None,
                         nargs=argparse.REMAINDER)
 
-    args = parser.parse_args()
+    args = parser.parse_args()  # 获得传入的参数，用args.xxx 获得参数值
 
     if args.config_file != "":
         cfg.merge_from_file(args.config_file)
@@ -39,21 +38,29 @@ if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = cfg.MODEL.DEVICE_ID
 
     if cfg.MODEL.UDA_STAGE == 'UDA':
-        train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num, train_loader1, train_loader2, img_num1, img_num2, s_dataset, t_dataset = make_dataloader(cfg)
+        train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num, train_loader1, train_loader2, img_num1, img_num2, s_dataset, t_dataset = make_dataloader(
+            cfg)
     else:
-        train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num = make_dataloader(cfg)
-    
+        train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num = make_dataloader(
+            cfg)
+
     # train_loader, train_loader_normal, val_loader, num_query, num_classes, camera_num, view_num = make_dataloader(cfg)
 
-    model = make_model(cfg, num_class=num_classes, camera_num=camera_num, view_num = view_num)
+    model = make_model(cfg, num_class=num_classes, camera_num=camera_num, view_num=view_num)
     model.load_param_finetune(cfg.TEST.WEIGHT)
     if cfg.MODEL.UDA_STAGE == 'UDA':
+        '''
         do_inference_uda(cfg,
-                 model,
-                 val_loader,
-                 num_query)
+                         model,
+                         val_loader,
+                         num_query)
+                         '''
+        do_inference_uda_test(cfg,
+                              model,
+                              val_loader,
+                              num_query)
     else:
         do_inference(cfg,
-                    model,
-                    val_loader,
-                    num_query)
+                     model,
+                     val_loader,
+                     num_query)
