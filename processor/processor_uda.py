@@ -124,7 +124,7 @@ def update_feat(cfg, epoch, model, train_loader1, train_loader2, device, feat_me
 def compute_knn_idx(logger, model, train_loader1, train_loader2, feat_memory1, feat_memory2, label_memory1,
                     label_memory2, img_num1, img_num2, target_sample_num=2, topk=1, reliable_threshold=0.0):
     # assert((torch.sum(feat_memory2,axis=1)!=0).all())
-    simmat = torch.matmul(feat_memory1, feat_memory2.T)
+    simmat = torch.matmul(feat_memory1, feat_memory2.T)  # 卡
     _, knnidx = torch.max(simmat, 1)
 
     if topk == 1:
@@ -265,7 +265,7 @@ def do_train_uda(cfg,
     epochs = cfg.SOLVER.MAX_EPOCHS
 
     logger = logging.getLogger("reid_baseline.train")
-    logger.info('start training')
+    logger.info('start training')  # start
     _LOCAL_PROCESS_GROUP = None
     if device:
         model.to(local_rank)

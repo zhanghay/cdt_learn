@@ -1,19 +1,17 @@
 MODEL:
-  PRETRAIN_CHOICE: 'pretrain'
-  # PRETRAIN_PATH: './.torch/models/jx_vit_base_p16_224-80ecf9dd.pth'
+  PRETRAIN_CHOICE: 'imagenet'
+  PRETRAIN_PATH: './data/pretrainModel/deit_base_distilled_patch16_224-df68dfff.pth'
   METRIC_LOSS_TYPE: 'triplet'
-  IF_LABELSMOOTH: 'off'
+  IF_LABELSMOOTH: 'on'
   IF_WITH_CENTER: 'no'
   NAME: 'transformer'
   NO_MARGIN: True
   DEVICE_ID: ('0')
-  Transformer_TYPE: 'uda_vit_base_patch16_224_TransReID' #uda_vit_small_patch16_224_TransReID
+  Transformer_TYPE: 'vit_base_patch16_224_TransReID' #vit_small_patch16_224_TransReID
   STRIDE_SIZE: [16, 16]
-  BLOCK_PATTERN: '3_branches'
-  TASK_TYPE: 'classify_DA'
-  UDA_STAGE: 'UDA'
-#  CAMERA_EMBEDDING: True
-#  VIEWPOINT_EMBEDDING: True
+  FC_SETTING: 'TransReID'
+  TASK_TYPE: 'classify_DA' 
+  UDA_STAGE: 'pretrain'
 
 INPUT:
   SIZE_TRAIN: [256, 256]
@@ -35,30 +33,29 @@ DATASETS:
 DATALOADER:
   SAMPLER: 'softmax'
   NUM_INSTANCE: 1 #4
-  NUM_WORKERS: 1 #4
+  NUM_WORKERS: 1 #8
 
 SOLVER:
   OPTIMIZER_NAME: 'SGD'
-  MAX_EPOCHS: 40 #40
+  MAX_EPOCHS: 10
   BASE_LR: 0.008
   IMS_PER_BATCH: 2 #64
   STEPS: [40, 80]
   GAMMA: 0.
   WARMUP_FACTOR: 0.01
-  WARMUP_EPOCHS: 10  # 10
+  WARMUP_EPOCHS: 10
   WARMUP_METHOD: 'linear'
   LARGE_FC_LR: False
-  CHECKPOINT_PERIOD: 120
+  CHECKPOINT_PERIOD: 10
   LOG_PERIOD: 100
   EVAL_PERIOD: 1
   WEIGHT_DECAY:  1e-4
   WEIGHT_DECAY_BIAS: 1e-4
   BIAS_LR_FACTOR: 2
-  WITH_PSEUDO_LABEL_FILTER: True
 
 TEST:
   EVAL: True
-  IMS_PER_BATCH: 2
+  IMS_PER_BATCH: 256
   RE_RANKING: False
   RE_RANKING_TRACK: False
 
@@ -67,3 +64,5 @@ TEST:
   FEAT_NORM: 'yes'
 
 OUTPUT_DIR: '../logs/trans4DA'
+
+
